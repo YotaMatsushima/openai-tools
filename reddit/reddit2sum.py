@@ -74,7 +74,7 @@ def main():
             print(chunk)
             response = openai.Completion.create(
                 engine="text-davinci-003",
-                prompt="summary for japanease:summary so far["+context+"] 1additional text: "+chunk,
+                prompt="日本語で要約:summary so far["+context+"] 1additional text: "+chunk,
                 temperature=0.3,
                 max_tokens=2500
             )
