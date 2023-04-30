@@ -67,21 +67,21 @@ def main():
         chunks.append(text[start:end])
         start = end
 
-    context=''
+    summary=''
     # Generate a summary for each chunk
-    with open(f'summary_{thread_id}.txt', 'w') as out_file:
+    with open(f'outputs/summary_{thread_id}.md', 'w') as out_file:
         for chunk in chunks:
             print(chunk)
             response = openai.Completion.create(
                 engine="text-davinci-003",
-                prompt="日本語で要約:summary so far["+context+"] 1additional text: "+chunk,
+                prompt="日本語で議論の概要とポイントをmarkdown方式でまとめる:summary so far["+summary+"] 1additional text: "+chunk,
                 temperature=0.3,
                 max_tokens=2500
             )
             summary = response.choices[0].text.strip()
             # Append the summary of the chunk to the file
-            out_file.write(summary + '\n\n')
-            context += summary + " "
+            
+        out_file.write(summary + '\n\n')
 
         # Add a final summary of the entire text to the file
        # response = openai.Completion.create(
