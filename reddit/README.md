@@ -30,7 +30,7 @@ Located in the `reddit` folder, this script uses OpenAI's GPT-4 to summarize Red
     ```
 4. Run the script from within the `reddit` folder:
     ```
-    python reddit2sum.py
+    python reddit/reddit2sum.py
     ```
 
 ### Usage
