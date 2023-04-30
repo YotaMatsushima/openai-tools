@@ -80,7 +80,7 @@ def main():
             )
             summary = response.choices[0].text.strip()
             # Append the summary of the chunk to the file
-            
+
         out_file.write(summary + '\n\n')
 
         # Add a final summary of the entire text to the file
@@ -95,4 +95,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
