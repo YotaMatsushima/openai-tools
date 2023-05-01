@@ -1,9 +1,9 @@
 import os
 import re
-
 import dotenv
 import openai
 import praw
+import gradio as gr
 
 # Load environment variables
 dotenv.load_dotenv()
@@ -33,14 +33,10 @@ def remove_special_characters(text):
 
     return text
 
-def main():
-    """Main function to get and process the comments, and save the summaries."""
+def summarize_thread(thread_id, prompt):
+    """Function to get and process the comments, and return the summaries."""
     # Create PRAW instance
     reddit = praw.Reddit(client_id=client_id, client_secret=client_secret, user_agent=user_agent)
-
-    # Specify the thread ID
-    thread_id = input("ThreadID:")
-    print("Starting to load comments\n")
 
     # Get the comments of the thread
     submission = reddit.submission(id=thread_id)
@@ -54,7 +50,6 @@ def main():
             cleaned_comment = remove_special_characters(comment.body)
             text += f"{comment.author}: {cleaned_comment}\n\n"
 
-    print("Starting to chunk text\n")
     # Chunk the text around 1500 characters
     chunks = []
     start = 0
@@ -62,36 +57,32 @@ def main():
         end = start + 1500
         if end < len(text):
             end = text.rfind('\n', start, end)
-            if end == -1:  # If no newline is found, cut at 1000 characters
+            if end == -1:  # If no newline is found, cut at 1500 characters
                 end = start + 1500
         chunks.append(text[start:end])
         start = end
 
-    summary=''
+    summaries = []
     # Generate a summary for each chunk
-    with open(f'outputs/summary_{thread_id}.md', 'w') as out_file:
-        for chunk in chunks:
-            print(chunk)
-            response = openai.Completion.create(
-                engine="text-davinci-003",
-                prompt="日本語で議論の概要とポイントをmarkdown方式でまとめる:summary so far["+summary+"] 1additional text: "+chunk,
-                temperature=0.3,
-                max_tokens=2500
-            )
-            summary = response.choices[0].text.strip()
-            # Append the summary of the chunk to the file
+    for chunk in chunks:
+        messages = [
+            {"role": "system", "content": "You are a helpful assistant that summarizes text."},
+            {"role": "user", "content": prompt + ": " + chunk}
+        ]
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=messages,
+        )
+        summary = response['choices'][0]['message']['content']
+        summaries.append(summary)
 
-        out_file.write(summary + '\n\n')
+    return "\n\n".join(summaries)
 
-        # Add a final summary of the entire text to the file
-       # response = openai.Completion.create(
-       #     engine="text-davinci-003",
-       #     prompt="overview 5Point for japanease:" + context,
-       #     temperature=0.3,
-       #     max_tokens=3500
-       # )
-       # total_summary = response.choices[0].text.strip()
-       # out_file.write('\nOverView 5Point for Japanease:\n' + total_summary + '\n')
 
-if __name__ == "__main__":
-    main()
+# Define Gradio interface
+iface = gr.Interface(fn=summarize_thread,
+                     inputs=["text", "text"],
+                     outputs="text")
+
+# Launch Gradio interface
+iface.launch()
