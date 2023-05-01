@@ -30,10 +30,9 @@ Located in the `reddit` folder, this script uses OpenAI's GPT-4 to summarize Red
     ```
 4. Run the script from within the `reddit` folder:
     ```
-    python reddit/reddit2sum.py
+    python reddit/reddit2sum_gr.py
     ```
 
 ### Usage
 
 When running the script, you will be prompted to enter a Reddit thread ID. The script will then fetch the comments from the thread, summarize them, and write the summaries into a file.
-

@@ -28,7 +28,7 @@ This script generates a summary of a YouTube video using OpenAI's GPT-4 model. T
 1. Run the script:
 
     ```
-    python youtube_summary.py
+    python youtube_summary_gr.py
     ```
 
 2. When prompted, enter the URL of the YouTube video you want to summarize. The video must have Japanese subtitles.
