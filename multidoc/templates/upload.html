@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <title>File Uploader</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <!-- Include Marked library for markdown to html conversion -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        isSum=false;
+        $(document).ready(function() {
+            $('.dropzone').on('dragover', function() {
+                $(this).addClass('hover');
+            });
+            $('.dropzone').on('dragleave', function() {
+                $(this).removeClass('hover');
+            });
+
+            $('#conversationForm').on('submit', function(e) {
+                e.preventDefault(); // Prevent the form from submitting normally
+                $('.loader').show();
+
+                var formData = new FormData(this);
+
+                $.ajax({
+                    url: '/',
+                    type: 'POST',
+                    data: formData,
+                    success: function(data) {
+                        console.log(data)
+                        $('.loader').hide();
+                        if(isSum){
+                          $('#result').prepend('<hr>' + marked.parse(data));
+                          $('#result').prepend( marked.parse(document.getElementById('conversationForm').querySelector('#prompt').value));
+                        }else {
+                          $('#result1').prepend('<hr>' + marked.parse(data));
+                          isSum=true;
+                        }
+
+                    },
+                    cache: false,
+                    contentType: false,
+                    processData: false
+                });
+            });
+            /*
+            $('#conversationForm').on('submit', function(e) {
+                e.preventDefault(); // Prevent the form from submitting normally
+                $('.loader').show();
+                var formData = new FormData(this);
+                fetch('/', {
+                    method: 'POST',
+                    body: formData
+                }).then(response => {
+                    const reader = response.body.getReader();
+                    return new ReadableStream({
+                        start(controller) {
+                            function push() {
+                                reader.read().then(({done, value}) => {
+                                    if (done) {
+                                        controller.close();
+                                        $('.loader').hide();
+                                        return;
+                                    }
+                                    controller.enqueue(value);
+                                    const textChunk = new TextDecoder("utf-8").decode(value);
+                                    if(isSum){
+                                      $('#result').prepend('<hr>' + marked.parse(textChunk));
+                                      $('#result').prepend( marked.parse(document.getElementById('conversationForm').querySelector('#prompt').value));
+                                    }else {
+                                      $('#result1').prepend(marked.parse(textChunk));
+                                      isSum=true;
+                                    }
+                                    push();
+                                })
+                            }
+                            push();
+
+                        }
+                    });
+                });
+            });
+
+            $('#youtubeForm').on('submit', function(e) {
+                e.preventDefault(); // Prevent the form from submitting normally
+                $('.loader').show();
+                var formData = new FormData(this);
+                fetch('/', {
+                    method: 'POST',
+                    body: formData
+                }).then(response => {
+                    const reader = response.body.getReader();
+                    return new ReadableStream({
+
+                        start(controller) {
+                            sumword="";
+                            function push() {
+                                reader.read().then(({done, value}) => {
+                                    if (done) {
+                                        controller.close();
+                                        $('.loader').hide();
+
+                                        if(isSum){
+
+                                          $('#result').value=marked.parse(document.getElementById('youtubeForm').querySelector('#prompt').value+"<hr>"+sumword);
+                                        }else{
+                                            $('#result1').value=marked.parse(sumword);
+                                            isSum=true;
+                                        }
+
+                                        return;
+                                    }
+                                    controller.enqueue(value);
+                                    const textChunk = new TextDecoder("utf-8").decode(value);
+
+                                    if(isSum){
+                                      $('#result').append(textChunk);
+                                    }else {
+                                      $('#result1').append(textChunk);
+                                    }
+                                    sumword=sumword+textChunk;
+
+                                    push();
+                                })
+                            }
+                            push();
+
+                        }
+                    });
+                });
+            });
+            */
+
+            $('#youtubeForm').on('submit', function(e) {
+                e.preventDefault(); // Prevent the form from submitting normally
+                $('.loader').show();
+
+                var formData = new FormData(this);
+
+                $.ajax({
+                    url: '/',
+                    type: 'POST',
+                    data: formData,
+                    success: function(data) {
+                        console.log(data)
+                        $('.loader').hide();
+
+                        if(isSum){
+                          $('#result').prepend('<hr>' + marked.parse(data));
+                          $('#result').prepend( marked.parse(document.getElementById('youtubeForm').querySelector('#prompt').value));
+                        }else {
+                          $('#result1').prepend('<hr>' + marked.parse(data));
+                          isSum=true;
+                        }
+                    },
+                    cache: false,
+                    contentType: false,
+                    processData: false
+                });
+            });
+
+
+            $('#resetForm').on('submit', function(e) {
+                e.preventDefault(); // Prevent the form from submitting normally
+                $('.loader').show();
+
+                $.ajax({
+                    url: '/reset',
+                    type: 'POST',
+                    success: function(data) {
+                        $('.loader').hide();
+                        $('#result').empty();
+                        $('#result1').empty();
+                        document.getElementById('youtube_url').value="";
+
+                        document.getElementById('conversationForm').querySelector('#prompt').value="";
+                        document.getElementById('youtubeForm').querySelector('#prompt').value="";
+                        isSum=false;
+                    },
+                    cache: false,
+                    contentType: false,
+                    processData: false
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Forms on the left side -->
+            <div class="col-sm-6">
+                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="file-tab" data-toggle="tab" href="#file" role="tab">File</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="youtube-tab" data-toggle="tab" href="#youtube" role="tab">YouTube</a>
+                    </li>
+                </ul>
+                <div class="tab-content" id="myTabContent">
+                    <div class="tab-pane fade show active" id="file" role="tabpanel">
+                        <form id="conversationForm" action="/" method="post" enctype="multipart/form-data">
+                          <div class="dropzone">
+                            <p><strong>pptx, pdf, wordファイル変換:</strong></p>
+                            <label for="file-input" class="file-label">ファイルを選択してください</label>
+                            <input id="file-input" type="file" name="file">
+                          </div>
+                            <input type="text" id="prompt" name="prompt" placeholder="Enter the prompt for OpenAI (optional)">
+                            <button type="submit">start conversation</button>
+                        </form>
+                    </div>
+                    <div class="tab-pane fade" id="youtube" role="tabpanel">
+                        <form id="youtubeForm" action="/" method="post" enctype="multipart/form-data">
+                            <div class="dropzone">
+                                <b>Youtube File conversation:</b><br>
+                                <input type="text" id="youtube_url" name="youtube_url" placeholder="youtube_url(option)">
+                            </div>
+                            <input type="text" id="prompt" name="prompt" placeholder="Enter the prompt for OpenAI (optional)">
+                            <button type="submit">start conversation</button>
+                        </form>
+                    </div>
+                </div>
+                <form id="resetForm" action="/reset" method="post">
+                    <button type="submit">reset conversation</button>
+                </form>
+                <div class="loader"></div>
+            </div>
+
+            <!-- Results on the right side -->
+            <div class="col-sm-6">
+                <div class="row">
+                    <div class="col-sm-12 mb-5">
+                        <div><b>summary</b></div>
+                        <!-- Add a new div to display the result -->
+                        <div id="result1" style="height: 400px; border: 1px solid black; overflow-y: auto; padding: 10px;">
+                            <!-- Result will be displayed here -->
+                        </div>
+                    </div>
+                    <div class="col-sm-12">
+                        <div><b>AI conversation</b></div>
+                        <!-- Add a new div to display the result -->
+                        <div id="result" style="height: 400px; border: 1px solid black; overflow-y: auto; padding: 10px;">
+                            <!-- Result will be displayed here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Include Bootstrap JS -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</body>
+</html>
